@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- example/readme.md to make pub.dev happy
+
 ## 1.0.0
 
 - Moved temporary directory to `.dart_tool/build/protofu`
