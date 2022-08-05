@@ -16,25 +16,29 @@ import 'package:ansicolor/ansicolor.dart';
 
 final penDone = AnsiPen()..green();
 
+/// Returns a text based progress bar for [percentComplete].
 String progressBar(
   num percentComplete, {
   int width = 50,
   AnsiPen? colorCompleted,
   AnsiPen? colorRemainder,
+  String leftCap = '[',
+  String rightCap = ']',
   String fill = '=',
   String empty = ' ',
 }) {
   percentComplete = percentComplete.clamp(0, 1.0);
-  int count = (width * percentComplete).round();
+  final internalWidth = width - 2;
+  int count = (internalWidth * percentComplete).round();
 
   var done = fill * count;
   if (colorCompleted != null) {
     done = colorCompleted(done);
   }
 
-  var remainder = empty * (width - count);
+  var remainder = empty * (internalWidth - count);
   if (colorRemainder != null) {
     remainder = colorRemainder(remainder);
   }
-  return '$done$remainder';
+  return '[$done$remainder]';
 }

@@ -19,6 +19,10 @@ import 'package:protofu/paths.dart';
 import 'package:path/path.dart' as path;
 import 'package:protofu/repos.dart';
 
+/// Repository of Protos from Git
+///
+/// NOTE: Requires `git` tool on the path.
+/// NOTE: Only handles shallow checkouts right now.
 class GitRepo implements Repo {
   final String url;
   final String? ref;

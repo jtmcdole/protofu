@@ -16,7 +16,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:protofu/download_tools.dart';
 import 'package:protofu/git.dart';
-import 'package:protofu/paths.dart';
 import 'package:protofu/repos.dart';
 import 'package:protofu/spinner.dart';
 import 'package:protofu/work.dart';
@@ -71,8 +70,6 @@ void main(List<String> args) async {
       processed.add(file.path);
     }
   }
-
-  config.ipaths.add(googleProtobufs.path);
 
   final outfolder = 'lib/src/generated';
   await Directory(outfolder).create(recursive: true);
@@ -185,7 +182,7 @@ Future processYaml(YamlMap yaml, Config config) async {
 
 Future processRepos(Config config) async {
   if (config.repos.isEmpty) return;
-  await doLongTask('loading third_party repos', () async {
+  await waitForTask('loading third_party repos', () async {
     for (var repo in config.repos) {
       await repo.fetch();
       config.ipaths.add(repo.cache);

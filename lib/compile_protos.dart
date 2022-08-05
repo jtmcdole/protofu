@@ -16,16 +16,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
+import 'package:protofu/cursor.dart';
 import 'package:protofu/paths.dart';
 import 'package:protofu/progress_bar.dart';
 
+/// Walk trhgouh [protos] paths and compile them with protoc + [baseArguments].
 Future<void> compileProtos(
     Set<String> protos, List<String> baseArguments) async {
   int counter = 0;
 
   void writeStatusBar(String file) {
     final bar = progressBar(counter / protos.length, colorCompleted: penDone);
-    stdout.write('\x1B[900D[$bar] ($counter / ${protos.length}) - $file');
+    stdout
+      ..moveFarLeft()
+      ..write('$bar ($counter / ${protos.length}) - $file');
   }
 
   for (var proto in protos) {

@@ -18,19 +18,23 @@ import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as path;
 
 bool _anyWhere(_) => true;
+void _noProgress(_) {}
 
+/// Unzips the raw [bytes] to [target] path with simple [where] filtering.
+///
+/// Provide a [progress] callback for updates between files processing.
 Future<void> unzip(
   List<int> bytes,
   String target, {
   bool Function(String path) where = _anyWhere,
-  void Function(num progress)? progress,
+  void Function(num progress) progress = _noProgress,
 }) async {
   final archive = ZipDecoder().decodeBytes(bytes);
   final int files = archive.length;
   int count = 1;
   for (final file in archive) {
     final filename = file.name;
-    if (progress != null) progress(count++ / files);
+    progress(count++ / files);
     if (file.isFile && where(file.name)) {
       final fileHandle = File(path.join(target, filename));
       await fileHandle.create(recursive: true);

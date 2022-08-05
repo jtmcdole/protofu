@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// Defines the base interface for all external repositories and how they
+/// can be [fetch].
 abstract class Repo {
   String get cache;
+
+  /// Future that completes when the repository is available
+  /// in the [cacheDirectory].
   Future<void> fetch();
 }
 
+/// Repository on disk somewhere (no work to be done).
 class LocalRepo extends Repo {
   @override
   final String cache;

@@ -20,26 +20,24 @@ import 'package:protofu/cursor.dart';
 @visibleForTesting
 const spinnerGlyphs = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
+/// Returns a [spinnerGlyphs] for [counter].
 String spinner(int counter) => spinnerGlyphs[counter % spinnerGlyphs.length];
 
-class Spinner {
-  int count = 0;
-  String tick() => spinner(count++);
-}
-
-Future doLongTask(String description, Future otherWork) async {
+/// Waits for [otherWork], a long running task to complete while rendering
+/// a spinner to the screen with [description].
+Future waitForTask(String description, Future otherWork) async {
   if (!description.endsWith(' ')) {
     description = '$description ';
   }
   stdout.write(description);
   try {
     stdout.hideCursor();
-    final spinner = Spinner();
+    int count = 0;
     bool done = false;
-    stdout.write(spinner.tick());
+    stdout.write(spinner(count++));
     final tickerFuture = () async {
       while (!done) {
-        stdout.write('\x1B[D${spinner.tick()}');
+        stdout.write('\x1B[D${spinner(count++)}');
         await Future.delayed(const Duration(milliseconds: 100));
       }
     }();

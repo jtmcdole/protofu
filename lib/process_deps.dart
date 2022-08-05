@@ -20,7 +20,7 @@ import 'package:protofu/paths.dart';
 
 Future<Set<String>> processDeps(String file, List<String> baseArguments) async {
   final work = <String>{};
-  final tmpPath = path.join(temporaryDirectory.path, 'tmp.deps');
+  final tmpPath = path.join(baseDirectory.path, 'tmp.deps');
   final depsProcess = await Process.run(
     protoc,
     [

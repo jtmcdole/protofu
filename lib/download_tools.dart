@@ -19,11 +19,13 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:protofu/cursor.dart';
 import 'package:protofu/paths.dart';
 import 'package:protofu/progress_bar.dart';
 import 'package:protofu/spinner.dart';
 import 'package:protofu/unzip.dart';
 
+/// Downloads the protoc compiler for [version].
 Future<void> downloadProtoc(String version) async {
   final platformString = {
         'windows': 'win64',
@@ -42,21 +44,27 @@ Future<void> downloadProtoc(String version) async {
     return;
   }
 
-  stdout.write('[${progressBar(0, colorCompleted: penDone)}] '
+  stdout.write('${progressBar(0, colorCompleted: penDone)} '
       'downloading dart protoc plugin');
-  final bytes = await getWithProgress(downloadUri, (progress) {
+  final bytes = await _getWithProgress(downloadUri, (progress) {
     final bar = progressBar(progress, colorCompleted: penDone);
-    stdout.write('\x1B[900D[$bar]');
+    stdout
+      ..moveFarLeft()
+      ..write(bar);
   });
   final bar = progressBar(1.0, colorCompleted: penDone);
-  stdout.write('\x1B[900D[$bar]');
+  stdout
+    ..moveFarLeft()
+    ..write(bar);
   stdout.writeln();
 
-  stdout.write(
-      '\x1B[900D[${progressBar(0, colorCompleted: penDone)}] uncompressing protoc');
+  stdout
+    ..moveFarLeft()
+    ..write('${progressBar(0, colorCompleted: penDone)} uncompressing protoc');
   await unzip(bytes, compilerDirectory.path, progress: (progress) {
     stdout
-        .write('\x1B[900D[${progressBar(progress, colorCompleted: penDone)}]');
+      ..moveFarLeft()
+      ..write(progressBar(progress, colorCompleted: penDone));
   });
   stdout.writeln();
 
@@ -65,11 +73,14 @@ Future<void> downloadProtoc(String version) async {
   }
 }
 
-bool pluginWhere(String file) {
+bool _pluginWhere(String file) {
   final segments = path.split(file);
   return segments.contains('protoc_plugin') || segments.contains('protobuf');
 }
 
+/// Downloads the Dart protoc plugin for [version].
+///
+/// Fetches packages and compiles the plugin for faster execution.
 Future<void> downloadDartPlugin(String version) async {
   final dartExeName =
       Platform.isWindows ? 'protoc-gen-dart.bat' : 'protoc-gen-dart';
@@ -88,34 +99,39 @@ Future<void> downloadDartPlugin(String version) async {
       Uri.parse('https://github.com/google/protobuf.dart/archive/'
           'refs/tags/protoc_plugin-v$version.zip');
 
-  stdout.write('[${progressBar(0, colorCompleted: penDone)}] '
+  stdout.write('${progressBar(0, colorCompleted: penDone)} '
       'downloading dart protoc plugin');
-  final bytes = await getWithProgress(downloadUri, (progress) {
+  final bytes = await _getWithProgress(downloadUri, (progress) {
     final bar = progressBar(progress, colorCompleted: penDone);
-    stdout.write('\x1B[900D[$bar]');
+    stdout
+      ..moveFarLeft()
+      ..write(bar);
   });
-  stdout.write('\x1B[900D[${progressBar(1.0, colorCompleted: penDone)}]');
+  stdout
+    ..moveFarLeft()
+    ..write(progressBar(1.0, colorCompleted: penDone));
   stdout.writeln();
 
-  stdout.write('[${progressBar(0, colorCompleted: penDone)}] '
+  stdout.write('${progressBar(0, colorCompleted: penDone)} '
       'uncompressing dart protoc plugin');
   await unzip(
     bytes,
     pluginDirectory.path,
-    where: pluginWhere,
+    where: _pluginWhere,
     progress: (progress) {
-      stdout.write(
-          '\x1B[900D[${progressBar(progress, colorCompleted: penDone)}]');
+      stdout
+        ..moveFarLeft()
+        ..write(progressBar(progress, colorCompleted: penDone));
     },
   );
   stdout.writeln();
 
   // Fetch build deps from thirdparty package.
-  await doLongTask('fetch plugin dart packages',
+  await waitForTask('fetch plugin dart packages',
       Process.run('dart', ['pub', 'get'], workingDirectory: localPluginPath));
 
   // Compile program for higher performance.
-  await doLongTask(
+  await waitForTask(
       'compiling protoc_plugin.dart for speed',
       Process.run('dart', ['compile', 'exe', 'bin/protoc_plugin.dart'],
           workingDirectory: localPluginPath));
@@ -130,7 +146,7 @@ Future<void> downloadDartPlugin(String version) async {
   }
 }
 
-Future<Uint8List> getWithProgress(Uri url, void Function(num) progress) async {
+Future<Uint8List> _getWithProgress(Uri url, void Function(num) progress) async {
   final client = http.Client();
   final response = await client.send(http.Request('GET', url));
 

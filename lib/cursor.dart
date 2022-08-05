@@ -14,8 +14,34 @@
 
 import 'dart:io';
 
-extension StdoutCursour on Stdout {
+/// Simple extension to stdout to hide the terminal curosr.
+extension StdoutCursor on Stdout {
+  /// When added to the stdout; moves the cursor really far to the left.
+  void moveFarLeft() => stdout.write('\x1B[900D');
+
+  /// Hides the terminal cursor.
+  ///
+  /// You will want to have code wrapped in a try-finally block:
+  ///
+  /// ```
+  /// try{
+  ///   stdout.hideCursor();
+  /// } finally {
+  ///   stdout.showCursor();
+  /// }
+  /// ```
   void hideCursor() => stdout.write('\x1b[?25l');
 
+  /// Shows the terminal cursor.
+  ///
+  /// You will want to have code wrapped in a try-finally block:
+  ///
+  /// ```
+  /// try{
+  ///   stdout.hideCursor();
+  /// } finally {
+  ///   stdout.showCursor();
+  /// }
+  /// ```
   void showCursor() => stdout.write('\x1b[?25h');
 }

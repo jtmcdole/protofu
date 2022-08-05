@@ -18,14 +18,14 @@ import 'package:path/path.dart' as path;
 late String protoc;
 late String dartPlugin;
 
-final temporaryDirectory =
-    Directory(path.join('.dart_tool', 'build', 'protoc_builder'));
+/// Base directory for protofu
+final baseDirectory = Directory(path.join('.dart_tool', 'build', 'protofu'));
 
-final compilerDirectory =
-    Directory(path.join(temporaryDirectory.path, 'compiler'));
+/// Protoc compiler directory
+final compilerDirectory = Directory(path.join(baseDirectory.path, 'compiler'));
 
-final googleProtobufs = Directory(path.join(compilerDirectory.path, 'include'));
+/// Dart protoc plugin directory
+final pluginDirectory = Directory(path.join(baseDirectory.path, 'plugin'));
 
-final pluginDirectory = Directory(path.join(temporaryDirectory.path, 'plugin'));
-
-final cacheDirectory = Directory(path.join(temporaryDirectory.path, 'cache'));
+/// Cache of third party protos
+final cacheDirectory = Directory(path.join(baseDirectory.path, 'cache'));

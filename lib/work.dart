@@ -19,6 +19,7 @@ import 'package:protofu/cursor.dart';
 import 'package:protofu/process_deps.dart';
 import 'package:protofu/spinner.dart';
 
+/// Discovery and process dependencies before eventually compiling protos.
 Future<void> doWork(Set<String> processed, List<String> baseArguments) async {
   final work = <String>{};
   for (var proto in processed) {
@@ -34,22 +35,20 @@ Future<void> doWork(Set<String> processed, List<String> baseArguments) async {
   //
   // Loops Detection: Not implemented yet; pull requests welcomed
   var todo = work.difference(processed);
-  final spinner = Spinner();
-  try {
-    stdout.hideCursor();
-    stdout.write('discover dependencies ');
-    stdout.write(spinner.tick());
+
+  final depsFuture = () async {
     while (todo.isNotEmpty) {
       for (var path in todo) {
         // something something test for loops
-        stdout.write('\x1B[D${spinner.tick()}');
         processed.add(path);
         work.addAll(await processDeps(path, baseArguments));
       }
       todo = work.difference(processed);
     }
-    stdout.write('\x1B[D✔️');
-    stdout.writeln();
+  }();
+
+  try {
+    await waitForTask('discover dependencies', depsFuture);
     stdout.writeln('compiling ${work.length} protos');
     await compileProtos(work, baseArguments);
   } finally {
