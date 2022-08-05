@@ -14,7 +14,7 @@
 
 name: protofu
 description: ProtoFu compiles protos for you! Transitive dependency tracking, protoc downloading, and more.
-version: 0.0.1-dev
+version: 1.0.0
 repository: https://github.com/jtmcdole/protofu
 
 environment:
