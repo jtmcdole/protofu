@@ -15,6 +15,8 @@
 compiler:
   # optional: pin the version of the protoc compiler
   # version: 3.12.4
+  # optional: pass grpc flag to --dart_out protoc string. Defaults to "false"
+  # grpcEnabled: true
 
 plugin:
   # optional: pin the version of the dart-proto-plugin
@@ -24,6 +26,12 @@ sources:
   # list of your local source files
   - "proto/"
   # - "proto2/"
+
+
+# optional: specify the path for the generated output from protoc.
+# Is relative from the project root. Defaults to "lib/src/generated"/
+# output: "lib/src/generated"
+
 
 include:
   # extra paths to search or repos to download.

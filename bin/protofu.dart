@@ -25,6 +25,7 @@ void main(List<String> args) async {
   final parser = ArgParser()
     ..addOption('protoc-version', abbr: 'p', defaultsTo: '3.12.4')
     ..addOption('dart-plugin-version', abbr: 'd', defaultsTo: '20.0.1')
+    ..addFlag('grpc', abbr: 'g', defaultsTo: false)
     ..addFlag('help', abbr: 'h', help: 'this helpful text', negatable: false);
 
   late ArgResults results;
@@ -41,8 +42,10 @@ void main(List<String> args) async {
     exit(0);
   }
 
-  var config =
-      Config(results['protoc-version'], results['dart-plugin-version']);
+  final outFolderDefault = 'lib/src/generated';
+
+  var config = Config(results['protoc-version'], results['dart-plugin-version'],
+      results['grpc'], outFolderDefault);
 
   var yaml = YamlMap();
   try {
@@ -58,6 +61,9 @@ void main(List<String> args) async {
   if (results.wasParsed('protoc-version')) {
     config.dartPluginVersion = results['dart-plugin-version'];
   }
+  if (results.wasParsed('grpc')) {
+    config.grpcEnabled = results['grpc'];
+  }
 
   await downloadProtoc(config.protocVersion);
   await downloadDartPlugin(config.dartPluginVersion);
@@ -71,12 +77,14 @@ void main(List<String> args) async {
     }
   }
 
-  final outfolder = 'lib/src/generated';
-  await Directory(outfolder).create(recursive: true);
+
+  final grpc = config.grpcEnabled ? 'grpc:' : '';
+
+  await Directory(config.outFolder).create(recursive: true);
 
   final baseArguments = [
     ...config.ipaths.map((e) => '-I$e'),
-    '--dart_out=$outfolder',
+    '--dart_out=$grpc${config.outFolder}',
   ];
   await doWork(processed, baseArguments);
 }
@@ -90,19 +98,25 @@ ${parser.usage}
 class Config {
   String protocVersion;
   String dartPluginVersion;
+  bool grpcEnabled;
+
+  String outFolder;
 
   final srcFolders = <Directory>[];
   final ipaths = <String>[];
 
   final repos = <Repo>[];
 
-  Config(this.protocVersion, this.dartPluginVersion);
+  Config(this.protocVersion, this.dartPluginVersion, this.grpcEnabled,
+      this.outFolder);
 
   @override
   String toString() => 'Config${{
         'protocVersion': protocVersion,
         'dartPluginVersion': dartPluginVersion,
+        'grpcEnabled': grpcEnabled,
         'srcFolders': srcFolders,
+        'outFolder': outFolder,
         'ipaths': ipaths,
         'repos': repos,
       }}';
@@ -111,6 +125,10 @@ class Config {
 Future processYaml(YamlMap yaml, Config config) async {
   if (yaml['compiler']?['version'] != null) {
     config.protocVersion = yaml['compiler']?['version'];
+  }
+
+  if (yaml['compiler']?['grpcEnabled'] != null) {
+    config.grpcEnabled = yaml['compiler']?['grpcEnabled'];
   }
 
   if (yaml['plugin']?['version'] != null) {
@@ -148,6 +166,11 @@ Future processYaml(YamlMap yaml, Config config) async {
     exit(1);
   }
 
+  /// Process the output directory
+  if (yaml['output'] != null) {
+    config.outFolder = yaml['output'];
+  }
+
   /// Process the include directives - git requires cloning.
   if (yaml['include'] == null) return;
   if (yaml['include'] is! YamlList) {
@@ -164,7 +187,7 @@ Future processYaml(YamlMap yaml, Config config) async {
       final url = git['url'] as String;
       final ref = git['ref'];
       if (ref != null && ref is! String) {
-        stderr.writeln('optioanl git `ref` required to be a string');
+        stderr.writeln('optional git `ref` required to be a string');
         exit(1);
       }
       config.repos.add(GitRepo(url, ref));
