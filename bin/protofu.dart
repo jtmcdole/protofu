@@ -44,8 +44,18 @@ void main(List<String> args) async {
 
   final outFolderDefault = 'lib/src/generated';
 
-  var config = Config(results['protoc-version'], results['dart-plugin-version'],
-      results['grpc'], outFolderDefault);
+  // construct config with defaults
+  var config = Config(
+      protocVersion: results['protoc-version'],
+      dartPluginVersion: results['dart-plugin-version'],
+      grpcEnabled: false,
+      outFolder: outFolderDefault,
+      disallowServices: false,
+      fatalWarnings: false,
+      experimentalAllowProto3Optional: false,
+      errorFormat: 'gcc',
+      includeImports: false,
+      includeSourceInfo: false);
 
   var yaml = YamlMap();
   try {
@@ -77,7 +87,6 @@ void main(List<String> args) async {
     }
   }
 
-
   final grpc = config.grpcEnabled ? 'grpc:' : '';
 
   await Directory(config.outFolder).create(recursive: true);
@@ -86,6 +95,49 @@ void main(List<String> args) async {
     ...config.ipaths.map((e) => '-I$e'),
     '--dart_out=$grpc${config.outFolder}',
   ];
+
+  // add options if specified in config
+  if (config.experimentalAllowProto3Optional) {
+    baseArguments.add('--experimental_allow_proto3_optional');
+  }
+
+  if (config.disallowServices) {
+    baseArguments.add('--disallow_services');
+  }
+
+  if (config.fatalWarnings) {
+    baseArguments.add('--fatal_warnings');
+  }
+
+  baseArguments.add('--error_format=${config.errorFormat}');
+
+  // add descriptor set out
+  if (config.descriptorSetOutFile != null) {
+    baseArguments.add('--descriptor_set_out=${config.descriptorSetOutFile}');
+
+    // add descriptor set out options if defined
+    if (config.includeImports) {
+      baseArguments.add('include_imports');
+    }
+
+    if (config.includeSourceInfo) {
+      baseArguments.add('--include_source_info');
+    }
+  }
+
+  // add descriptor sets in
+  if (config.descriptorSetInFiles.isNotEmpty) {
+    // construct descriptor set in files string
+    var descriptorSetInArg = "--descriptor_set_in=";
+
+    for (var file in config.descriptorSetInFiles) {
+      descriptorSetInArg += "${file.toString()}'";
+    }
+
+    // pass to baseArguments
+    baseArguments.add(descriptorSetInArg);
+  }
+
   await doWork(processed, baseArguments);
 }
 
@@ -99,22 +151,45 @@ class Config {
   String protocVersion;
   String dartPluginVersion;
   bool grpcEnabled;
+  bool disallowServices;
+  bool fatalWarnings;
+  bool experimentalAllowProto3Optional;
+  String errorFormat;
 
   String outFolder;
+
+  String? descriptorSetOutFile;
+  bool includeImports;
+  bool includeSourceInfo;
+
+  final descriptorSetInFiles = <File>[];
 
   final srcFolders = <Directory>[];
   final ipaths = <String>[];
 
   final repos = <Repo>[];
 
-  Config(this.protocVersion, this.dartPluginVersion, this.grpcEnabled,
-      this.outFolder);
+  Config(
+      {required this.protocVersion,
+      required this.dartPluginVersion,
+      required this.grpcEnabled,
+      required this.disallowServices,
+      required this.outFolder,
+      required this.fatalWarnings,
+      required this.experimentalAllowProto3Optional,
+      required this.errorFormat,
+      required this.includeImports,
+      required this.includeSourceInfo});
 
   @override
   String toString() => 'Config${{
         'protocVersion': protocVersion,
         'dartPluginVersion': dartPluginVersion,
         'grpcEnabled': grpcEnabled,
+        'disallowServices': disallowServices,
+        'fatalWarnings': fatalWarnings,
+        'experimentalAllowProto3Optional': experimentalAllowProto3Optional,
+        'errorFormat': errorFormat,
         'srcFolders': srcFolders,
         'outFolder': outFolder,
         'ipaths': ipaths,
@@ -166,7 +241,59 @@ Future processYaml(YamlMap yaml, Config config) async {
     exit(1);
   }
 
-  /// Process the output directory
+  // Process options
+  if (yaml['options']?['disallowServices'] != null) {
+    config.disallowServices = yaml['options']?['disallowServices'];
+  }
+
+  if (yaml['options']?['experimentalAllowProto3Optional'] != null) {
+    config.experimentalAllowProto3Optional =
+        yaml['options']?['experimentalAllowProto3Optional'];
+  }
+
+  if (yaml['options']?['fatalWarnings'] != null) {
+    config.fatalWarnings = yaml['options']?['fatalWarnings'];
+  }
+
+  if (yaml['options']?['errorFormat'] != null) {
+    config.errorFormat = yaml['options']?['errorFormat'];
+  }
+
+  // Process descriptor sets settings
+  if (yaml['descriptor']?['setIn'] != null) {
+    if (yaml['descriptor']['setIn'] is String) {
+      final descSetInFile = File(yaml['descriptor']['setIn']);
+      if (!await descSetInFile.exists()) {
+        stderr.writeln('missing descriptor set in file: $descSetInFile');
+        exit(1);
+      }
+      config.descriptorSetInFiles.add(descSetInFile);
+    } else if (yaml['descriptor']['setIn'] is YamlList) {
+      for (var file in yaml['descriptor']['setIn']) {
+        if (file is! String) {
+          stderr.writeln(
+              'bad source rule in yaml - string entry expected: $file');
+          exit(1);
+        }
+        final descSetInFile = File(file);
+        if (!await descSetInFile.exists()) {
+          stderr.writeln('missing source folder: $descSetInFile');
+          exit(1);
+        }
+        config.descriptorSetInFiles.add(descSetInFile);
+      }
+    } else {
+      stderr.writeln(
+          'Descriptor Set In: Bad source rule in yaml - list or single entry expected');
+      exit(1);
+    }
+  }
+
+  if (yaml['descriptor']?['setOut'] != null) {
+    config.descriptorSetOutFile = yaml['descriptor']?['setOut'];
+  }
+
+  // Process the output directory
   if (yaml['output'] != null) {
     config.outFolder = yaml['output'];
   }
