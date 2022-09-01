@@ -15,6 +15,64 @@
 compiler:
   # optional: pin the version of the protoc compiler
   # version: 3.12.4
+  # optional: pass grpc flag to --dart_out protoc string. Defaults to "false"
+  # grpcEnabled: true
+
+
+options:
+  # optional: pass the --disallow_services flag
+  # disallowServices: True
+  #
+  # optional: pass the --fatal_warnings flag  Make warnings be fatal (similar to -Werr in
+  #                                           gcc). This flag will make protoc return
+  #                                           with a non-zero exit code if any warnings
+  #                                           are generated.
+  # fatalWarnings: True
+  #
+  # optional: pass the --experimental_allow_proto3_optional flag
+  # experimentalAllowProto3Optional: True
+  #
+  # optional: set the --error_format=FORMAT flag
+  #  --error_format=FORMAT       Set the format in which to print errors.
+  #                              FORMAT may be 'gcc' (the default) or 'msvs'
+  #                              (Microsoft Visual Studio format).
+  # errorFormat: gcc
+
+descriptor:
+  # optional: specifies the descriptor set in and passes the --descriptor_set_in=FILES flag
+  #  --descriptor_set_in=FILES   Specifies a delimited list of FILES
+  #                              each containing a FileDescriptorSet (a
+  #                              protocol buffer defined in descriptor.proto).
+  #                              The FileDescriptor for each of the PROTO_FILES
+  #                              provided will be loaded from these
+  #                              FileDescriptorSets. If a FileDescriptor
+  #                              appears multiple times, the first occurrence
+  #                              will be used.
+  # setIn:
+  #   - location/to/descriptor/filename
+  #   - location/to/descriptor/another-filename
+  #
+  # optional: specifies the descriptor set out and calls the --descriptor_set_out=FILE flag
+  #  -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,
+  #    --descriptor_set_out=FILE defined in descriptor.proto) containing all of
+  #                              the input files to FILE.
+  # setOut: /location/to/descriptor/out-filename
+  #
+  # optional: pass the --include_imports flag
+  #  --include_imports           When using --descriptor_set_out, also include
+  #                              all dependencies of the input files in the
+  #                              set, so that the set is self-contained.
+  # includeImports: True
+  #
+  # optional: pass the --include_source_info flag
+  #  --include_source_info       When using --descriptor_set_out, do not strip
+  #                              SourceCodeInfo from the FileDescriptorProto.
+  #                              This results in vastly larger descriptors that
+  #                              include information about the original
+  #                              location of each decl in the source file as
+  #                              well as surrounding comments.
+  # includeSourceInfo: True
+
 
 plugin:
   # optional: pin the version of the dart-proto-plugin
@@ -24,6 +82,12 @@ sources:
   # list of your local source files
   - "proto/"
   # - "proto2/"
+
+
+# optional: specify the path for the generated output from protoc.
+# Is relative from the project root. Defaults to "lib/src/generated"/
+# output: "lib/src/generated"
+
 
 include:
   # extra paths to search or repos to download.
