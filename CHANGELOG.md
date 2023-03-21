@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- Added grpc option to protofu.yaml
+- Expands options to protofu.yaml
+
 ## 1.0.1
 
 - example/readme.md to make pub.dev happy
