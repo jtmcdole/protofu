@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Dart 3.0
+
 ## 1.0.2
 
 - Added grpc option to protofu.yaml
