@@ -14,7 +14,7 @@
 
 compiler:
   # optional: pin the version of the protoc compiler
-  # version: 3.12.4
+  version: 27.2
   # optional: pass grpc flag to --dart_out protoc string. Defaults to "false"
   # grpcEnabled: true
 
@@ -76,7 +76,7 @@ descriptor:
 
 plugin:
   # optional: pin the version of the dart-proto-plugin
-  # version: 20.0.1
+  version: 21.1.2
 
 sources:
   # list of your local source files

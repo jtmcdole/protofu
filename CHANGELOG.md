@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+Udpate: pubspec.yaml packages
+Update: example with latest plugin values
+Fix: interpret `version` yaml values as strings
+
 ## 1.1.1
 
 - Dart 3.0

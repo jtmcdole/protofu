@@ -199,7 +199,7 @@ class Config {
 
 Future processYaml(YamlMap yaml, Config config) async {
   if (yaml['compiler']?['version'] != null) {
-    config.protocVersion = yaml['compiler']?['version'];
+    config.protocVersion = '${yaml['compiler']['version']}';
   }
 
   if (yaml['compiler']?['grpcEnabled'] != null) {
@@ -207,7 +207,7 @@ Future processYaml(YamlMap yaml, Config config) async {
   }
 
   if (yaml['plugin']?['version'] != null) {
-    config.dartPluginVersion = yaml['plugin']?['version'];
+    config.dartPluginVersion = '${yaml['plugin']['version']}';
   }
 
   if (yaml['sources'] == null) {

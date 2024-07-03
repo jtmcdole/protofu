@@ -20,7 +20,9 @@ At least, that's the hope.
 Example runs:
 [![asciicast](https://asciinema.org/a/512092.svg)](https://asciinema.org/a/512092)
 
+Check out [protofu.yaml](example/protofu.yaml) for template yaml.
+
 Eventual goal:
 
-* `dart pub global activate protofu`
-* `protofu` then helps you.
+[x] `dart pub global activate protofu`
+[x] `protofu` then helps you.
