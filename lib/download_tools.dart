@@ -75,7 +75,7 @@ Future<void> downloadProtoc(String version) async {
 
 bool _pluginWhere(String file) {
   final segments = path.split(file);
-  return segments.contains('protoc_plugin') || segments.contains('protobuf');
+  return segments.contains('protoc_plugin') || segments.contains('protobuf') || segments.contains('pubspec.yaml');
 }
 
 /// Downloads the Dart protoc plugin for [version].
