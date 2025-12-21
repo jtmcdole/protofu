@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- Fix: protoc plugin > 22.1.0 works
+
 ## 1.2.0
 
 Udpate: pubspec.yaml packages
