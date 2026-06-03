@@ -1,0 +1,14 @@
+builders:
+  protofu:
+    import: "package:protofu/builder.dart"
+    builder_factories: ["getBuilder"]
+    # Default build_extensions assume root_dir: "proto/" and out_dir: "lib/proto/".
+    # If you override either option in your build.yaml, you must also override
+    # build_extensions here to match, otherwise build_runner will not track
+    # the correct input/output mapping.
+    build_extensions: {"proto/{{}}.proto": ["lib/proto/{{}}.pb.dart", "lib/proto/{{}}.pbenum.dart", "lib/proto/{{}}.pbserver.dart", "lib/proto/{{}}.pbgrpc.dart"]}
+    auto_apply: dependents
+    build_to: source
+    defaults:
+      generate_for:
+        - "proto/**"

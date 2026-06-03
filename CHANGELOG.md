@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Feature: `build_runner` integration via `ProtofuBuilder` (`lib/builder.dart`, `build.yaml`).
+- Feature: Resolve `protoc_plugin` from the project's pubspec dependencies (`lib/plugin_from_pubspec.dart`).
+- Feature: ARM architecture support for macOS, Linux, and Windows (`lib/download_tools.dart`).
+
 ## 1.2.1
 
 - Fix: protoc plugin > 22.1.0 works

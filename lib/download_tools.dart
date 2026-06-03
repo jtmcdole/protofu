@@ -25,14 +25,35 @@ import 'package:protofu/progress_bar.dart';
 import 'package:protofu/spinner.dart';
 import 'package:protofu/unzip.dart';
 
+bool _isArm() {
+  if (Platform.isWindows) {
+    // PROCESSOR_ARCHITECTURE may be 'x86' when a 32-bit process runs on a
+    // 64-bit OS; PROCESSOR_ARCHITEW6432 is set to the native arch in that
+    // case, so check both to correctly detect ARM64 under emulation.
+    final arch = Platform.environment['PROCESSOR_ARCHITECTURE'] ?? '';
+    final arch6432 = Platform.environment['PROCESSOR_ARCHITEW6432'] ?? '';
+    return arch.toUpperCase() == 'ARM64' || arch6432.toUpperCase() == 'ARM64';
+  }
+  // uname -m returns arm64 on Apple Silicon and aarch64 on Linux ARM.
+  try {
+    final result = Process.runSync('uname', ['-m']);
+    final machine = result.stdout.toString().trim().toLowerCase();
+    return machine == 'arm64' || machine == 'aarch64';
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Downloads the protoc compiler for [version].
 Future<void> downloadProtoc(String version) async {
-  final platformString = {
-        'windows': 'win64',
-        'macos': 'osx-x86_64',
-        'linux': 'linux-x86_64'
-      }[Platform.operatingSystem] ??
-      'unsupported';
+  final arch = _isArm() ? 'aarch_64' : 'x86_64';
+  final platformString = Platform.isWindows
+      ? 'win64'
+      : Platform.isMacOS
+          ? 'osx-$arch'
+          : Platform.isLinux
+              ? 'linux-$arch'
+              : 'unsupported';
   if (platformString == 'unsupported') throw 'unsupported platform';
   final protocExe = Platform.isWindows ? 'protoc.exe' : 'protoc';
   final downloadUri =

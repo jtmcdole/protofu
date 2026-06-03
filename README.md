@@ -26,3 +26,41 @@ Eventual goal:
 
 [x] `dart pub global activate protofu`
 [x] `protofu` then helps you.
+
+## Use protofu within the dart build runner
+### Example
+```
+pubspec.yaml:
+  dev_dependencies:
+    build_runner: ^2.13.1
+    protofu: <recent version>
+    protoc_plugin: ^21.1.2
+
+  build.yaml:
+      builders:
+        protofu:
+          options:
+            protobuf_version: "27.5"
+            use_protoc_plugin_from_pubspec: true
+            root_dir: "proto/"
+            proto_paths:
+              - "proto/"
+            out_dir: "lib/proto"
+            grpc: false
+            precompile_protoc_plugin: true
+```
+
+> **Note:** If you change `root_dir` or `out_dir` from their defaults, you must also override `build_extensions` in your `build.yaml` to match. Otherwise `build_runner` will not correctly track which files the builder produces.
+>
+> Example — if you set `root_dir: "protos/"` and `out_dir: "lib/generated/"`:
+> ```yaml
+> builders:
+>   protofu:
+>     build_extensions: {"protos/{{}}.proto": ["lib/generated/{{}}.pb.dart", "lib/generated/{{}}.pbenum.dart", "lib/generated/{{}}.pbserver.dart"]}
+>     options:
+>       root_dir: "protos/"
+>       out_dir: "lib/generated/"
+> ```
+
+
+
